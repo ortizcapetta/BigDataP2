@@ -130,6 +130,54 @@ def top_users12(spark, hour):
                      "limit 15".format(str(top),str(bottom)))
     uids.coalesce(1).write.csv('/home/alejandra/Documents/CIIC5995/BigDataP2/results/users/top12/top12-' + str(hour))
     uids.show()
+def fulltweets(spark):
+    tweet = spark.read.csv('/home/alejandra/Documents/CIIC5995/BigDataP2/tweets.csv')
+    tweet.createOrReplaceTempView("tweets")
+    keywordsfull = spark.sql("select (case "
+                             "when lower(_c2) like '%headache%' then _c2 "
+                             "when lower(_c2) like '% flu %' then _c2 "
+                             "when lower(_c2) like '% zika %' then _c2 "
+                             "when lower(_c2) like '%diarrhea%' then _c2 "
+                             "when lower(_c2) like '% ebola %' then _c2 "
+                             "when lower(_c2) like '%headache%' then _c2 "
+                             "when lower(_c2) like '%measles%' then _c2 "
+                             "else NULL "
+                             "end) as keywords "
+                             "from tweets "
+                             )
+    keywordsfull.coalesce(1).write.csv('/home/alejandra/Documents/CIIC5995/BigDataP2/results/keywords_full1')
+
+    keywords = spark.sql("select (case "
+                         "when lower(_c2) like '%trump%' then 'trump' "
+                         "when lower(_c2) like '%headache%' then 'headache' "
+                         "when lower(_c2) like '% flu %' then 'flu' "
+                         "when lower(_c2) like '% zika %' then 'zika' "
+                         "when lower(_c2) like '%diarrhea%' then 'diarrhea' "
+                         "when lower(_c2) like '% ebola %' then 'ebola' "
+                         "when lower(_c2) like '%headache%' then 'headache' "
+                         "when lower(_c2) like '%measles%' then 'measles' "
+                         "else NULL "
+                         "end) as keywords,count(*) "
+                         "from tweets "
+                         "group by keywords ")
+    keywords.coalesce(1).write.csv('/home/alejandra/Documents/CIIC5995/BigDataP2/results/keywords1')
+    uids = spark.sql("select _c0 as uid,_c1 as username, count(*) "
+                     "from tweets "
+                     "group by uid,username "
+                     "order by count(*) desc "
+                     "limit 15")
+    # save
+    uids.coalesce(1).write.csv('/home/alejandra/Documents/CIIC5995/BigDataP2/results/uids1')
+
+    hashtag = spark.read.csv('/home/alejandra/Documents/CIIC5995/BigDataP2/hashtag.csv')
+    hashtag.createOrReplaceTempView("hashtag")
+    hashtags = spark.sql("select _c0 as hashtag, count(*) "
+                         "from hashtag "
+                         "group by hashtag "
+                         "order by count(*) desc "
+                         "limit 15")
+    # save hashtag info
+    hashtags.coalesce(1).write.csv('/home/alejandra/Documents/CIIC5995/BigDataP2/results/hashtags1')
 
 if __name__ == "__main__":
     spark = SparkSession.builder.getOrCreate()
@@ -137,6 +185,9 @@ if __name__ == "__main__":
     for hour in range(0, hours):
         print("HOUR : " + str(hour))
         start_analysis(spark, hour)
-    for hour in range(0, hours/12):
+    for hour in range(0, int(hours/12)):
         print("HOURS RANGE: " + str(hour * 12) + " to " + str((hour*12)+12))
         top_users12(spark, hour)
+    #full tweets is data of the whole day
+    fulltweets(spark)
+
