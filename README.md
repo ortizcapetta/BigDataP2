@@ -1,5 +1,5 @@
-# Big Data Analysis Project 2
-Second project for Big Data Analysis course CIIC5995 @ UPRM.
+# Big Data Analytics Project 2
+Second project for Big Data Analytics course CIIC5995 @ UPRM.
 The project consists of extracting data from tweets and analyzing them based on:
 1. Top keywords(trump,flu,zika,diarrhea,ebola,headache,measles)
 2. Top 10 Hashtags per hour
